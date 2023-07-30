@@ -1,32 +1,51 @@
-console.log("Hello, world! Support Ukraine! I love node! Pasha is a guru!");
+const contacts = require("./contacts");
+const { Command } = require("commander");
+// const argv = require("yargs").argv;
 
-const { error } = require("console");
-// const fs = require("fs").promises;
+// contacts.listContacts().then((contacts)=>console.log(contacts)).catch((err)=>console.error(err));
+// contacts.getContactById("AeHIrLTr6JkxGE6SN-0Rw").then((contacts)=>console.log(contacts)).catch((err)=>console.log(err));
+// contacts.removeContact("qdggE76Jtbfd9eWJHrssH").then((contacts) => console.log(contacts)).catch((err) => console.log(err));
+// contacts.addContact("id", "Batman", "batman@mail.com", "(999) 999-9999").then((contacts) => console.log(contacts)).catch((err) => console.log(err));;
 
-const fs = require("fs/promises");
+// console.log(process.argv);
 
-// const contacts=require("./contacts")
-// console.log(contacts);
+const program = new Command();
 
-// Через проміс
-// fs.readFile("./contacts")
-//   .then((data) => console.log(data))
-//   .catch((error) => console.log(error.message));
+program
+  .option("-a, --action <type>", "choose action")
+  .option("-i, --id <type>", "user id")
+  .option("-n, --name <type>", "user name")
+  .option("-e, --email <type>", "user email")
+  .option("-p, --phone <type>", "user phone");
 
-// Через асинхронну функцію
-//   async function readFile(path, options) {
-//   const data = await fs.readFile(path, options);
+program.parse(process.argv);
+const argv = program.opts();
 
-//   return data;
-// }
+async function invokeAction({ action, id, name, email, phone }) {
+  switch (action) {
+    case "list":
+      const allContacts = await contacts.listContacts();
+      console.table(allContacts);
+      break;
 
-//  readFile("index.js", { encoding: "utf-8" })
-//   .then((data) => console.log(data))
-//   .catch((err) => console.error(err));
+    case "get":
+      const cont = await contacts.getContactById(id);
+      console.log(cont);
+      break;
 
-// Через асинхронну функцію
-// const readFile = async () => {
-//     const data = await fs.readFile("path for file txt", { encoding: "utf-8" });
-//     console.log(data);
-// }
-// readFile();
+    case "add":
+      const newContact = await contacts.addContact({ name, email, phone });
+      console.log(newContact);
+      break;
+
+    case "remove":
+      const deletedContact = await contacts.removeContact(id);
+      console.log(deletedContact);
+      break;
+
+    default:
+      console.warn("\x1B[31m Unknown action type!");
+  }
+}
+
+invokeAction(argv);
