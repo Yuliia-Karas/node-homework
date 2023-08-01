@@ -18,21 +18,29 @@ async function listContacts() {
 
 // Повертає об'єкт контакту з таким id. Повертає null, якщо контакт з таким id не знайдений.
 async function getContactById(contactId) {
-  const contacts = await listContacts();
-  const cont = contacts.find((item) => item.id === contactId);
-  return cont || null;
+  try {
+    const contacts = await listContacts();
+    const cont = contacts.find((item) => item.id === contactId);
+    return cont || null;
+  } catch (error) {
+    console.log(error.message);
+  }
 }
 
 // Повертає об'єкт видаленого контакту. Повертає null, якщо контакт з таким id не знайдений.
 async function removeContact(contactId) {
-  const contacts = await listContacts();
-  const index = contacts.findIndex((cont) => cont.id === contactId);
-  if (index === -1) {
-    return null;
+  try {
+    const contacts = await listContacts();
+    const index = contacts.findIndex((cont) => cont.id === contactId);
+    if (index === -1) {
+      return null;
+    }
+    const deletedContact = contacts.splice(index, 1);
+    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+    return deletedContact[0];
+  } catch (error) {
+    console.log(error.message);
   }
-  const deletedContact = contacts.splice(index, 1);
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-  return deletedContact[0];
 }
 
 //перезапис даних
@@ -42,11 +50,15 @@ function write(data) {
 
 // Повертає об'єкт доданого контакту.
 async function addContact(data) {
-  const contacts = await listContacts();
-  const newContact = { ...data, id: crypto.randomUUID() };
-  contacts.push(newContact);
-  await write(data);
-  return newContact;
+  try {
+    const contacts = await listContacts();
+    const newContact = { ...data, id: crypto.randomUUID() };
+    contacts.push(newContact);
+    await write(data);
+    return newContact;
+  } catch (error) {
+    console.log(error.message);
+  }
 }
 
 module.exports = { listContacts, getContactById, removeContact, addContact };
